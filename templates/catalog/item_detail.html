@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.name }} - Каталог коллекционных монет и марок{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mt-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'category_list' %}">Категории</a></li>
+            <li class="breadcrumb-item"><a href="{{ item.category.get_absolute_url }}">{{ item.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ item.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Изображение предмета -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                {% if item.image %}
+                <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                {% else %}
+                <div class="bg-light text-center py-5">
+                    <i class="fas fa-image fa-5x text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <!-- Статистика просмотров -->
+                    <p class="text-muted mb-1">
+                        <i class="far fa-eye"></i> {{ item.hit_count.hits }} просмотров
+                    </p>
+                    
+                    <!-- Голосование -->
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="me-3">
+                            <button class="btn btn-sm {% if user_vote == True %}btn-success{% else %}btn-outline-success{% endif %} vote-btn" 
+                                    data-value="true" data-item="{{ item.slug }}" {% if not user.is_authenticated %}disabled{% endif %}>
+                                <i class="fas fa-thumbs-up"></i> <span class="likes-count">{{ likes }}</span>
+                            </button>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm {% if user_vote == False %}btn-danger{% else %}btn-outline-danger{% endif %} vote-btn" 
+                                    data-value="false" data-item="{{ item.slug }}" {% if not user.is_authenticated %}disabled{% endif %}>
+                                <i class="fas fa-thumbs-down"></i> <span class="dislikes-count">{{ dislikes }}</span>
+                            </button>
+                        </div>
+                        {% if not user.is_authenticated %}
+                        <small class="text-muted ms-2">Авторизуйтесь для голосования</small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Коллекция пользователя -->
+                    {% if user.is_authenticated %}
+                    <div class="mt-3">
+                        <button class="btn btn-sm {% if in_collection %}btn-warning{% else %}btn-outline-warning{% endif %} collection-btn" 
+                                data-item="{{ item.slug }}">
+                            <i class="fas {% if in_collection %}fa-star{% else %}fa-star{% endif %}"></i> 
+                            {% if in_collection %}В моей коллекции{% else %}Добавить в коллекцию{% endif %}
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Информация о предмете -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title">{{ item.name }}</h1>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong>Категория:</strong> {{ item.category.name }}</p>
+                            <p><strong>Страна:</strong> {{ item.country }}</p>
+                            <p><strong>Состояние:</strong> {{ item.get_condition_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if item.issue_date %}
+                            <p><strong>Дата выпуска:</strong> {{ item.issue_date }}</p>
+                            {% endif %}
+                            <p><strong>Добавлено:</strong> {{ item.created_at|date:"d.m.Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mt-3">
+                        <h5>Описание</h5>
+                        <p>{{ item.description|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Комментарии -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Комментарии ({{ item.comments.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_comment' item.slug %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ comment_form.text }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Отправить комментарий</button>
+                    </form>
+                    <hr>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">Пожалуйста, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'signup' %}">зарегистрируйтесь</a>, чтобы оставить комментарий.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        {% for comment in item.comments.all %}
+                        <div class="card mb-3">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ comment.user.username }}</strong>
+                                </div>
+                                <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ comment.text|linebreaks }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-muted">Пока нет комментариев.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        // AJAX для голосования
+        $('.vote-btn').click(function() {
+            const btn = $(this);
+            const value = btn.data('value') === true;
+            const itemSlug = btn.data('item');
+            
+            $.ajax({
+                url: `/item/${itemSlug}/vote/`,
+                type: 'POST',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    if (data.success) {
+                        // Обновляем счетчики
+                        $('.likes-count').text(data.likes);
+                        $('.dislikes-count').text(data.dislikes);
+                        
+                        // Обновляем стили кнопок
+                        if (value) {
+                            $('.vote-btn[data-value="true"]').removeClass('btn-outline-success').addClass('btn-success');
+                            $('.vote-btn[data-value="false"]').removeClass('btn-danger').addClass('btn-outline-danger');
+                        } else {
+                            $('.vote-btn[data-value="true"]').removeClass('btn-success').addClass('btn-outline-success');
+                            $('.vote-btn[data-value="false"]').removeClass('btn-outline-danger').addClass('btn-danger');
+                        }
+                    }
+                }
+            });
+        });
+        
+        // AJAX для добавления/удаления из коллекции
+        $('.collection-btn').click(function() {
+            const btn = $(this);
+            const itemSlug = btn.data('item');
+            
+            $.ajax({
+                url: `/item/${itemSlug}/collection/`,
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    if (data.success) {
+                        if (data.in_collection) {
+                            btn.removeClass('btn-outline-warning').addClass('btn-warning');
+                            btn.html('<i class="fas fa-star"></i> В моей коллекции');
+                        } else {
+                            btn.removeClass('btn-warning').addClass('btn-outline-warning');
+                            btn.html('<i class="fas fa-star"></i> Добавить в коллекцию');
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

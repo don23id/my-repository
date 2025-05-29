@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.venv/
+env/
+.env/
+pip-log.txt
+
+# Django
+*.sqlite3
+*.log
+staticfiles/
+
+# IDE (PyCharm, VSCode)
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Environments
+.env
+*.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Railway / Production
+*.pid
+*.seed
+*.gz

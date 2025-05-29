@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Моя коллекция - Каталог коллекционных монет и марок{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Моя коллекция</h1>
+    
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for collection_item in collection_items %}
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-card">
+                {% if collection_item.item.image %}
+                <img src="{{ collection_item.item.image.url }}" class="card-img-top" alt="{{ collection_item.item.name }}">
+                {% else %}
+                <div class="card-img-top bg-light text-center py-5">
+                    <i class="fas fa-image fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ collection_item.item.name }}</h5>
+                    <p class="card-text text-muted">{{ collection_item.item.country }}, {{ collection_item.item.get_condition_display }}</p>
+                    <p class="card-text">{{ collection_item.item.description|truncatechars:100 }}</p>
+                    {% if collection_item.notes %}
+                    <div class="mt-2">
+                        <h6>Мои заметки:</h6>
+                        <p class="card-text">{{ collection_item.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                    <a href="{{ collection_item.item.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                    <small class="text-muted">Добавлено: {{ collection_item.added_at|date:"d.m.Y" }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <p>В вашей коллекции пока нет предметов.</p>
+                <a href="{% url 'index' %}" class="btn btn-primary mt-2">Перейти к каталогу</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

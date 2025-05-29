@@ -1,0 +1,107 @@
+[
+  {
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+      "name": "Монеты СССР",
+      "slug": "monety-sssr",
+      "description": "Коллекционные монеты советского периода"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+      "name": "Марки России",
+      "slug": "marki-rossii",
+      "description": "Почтовые марки Российской Федерации"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+      "name": "Юбилейные монеты",
+      "slug": "yubileynye-monety",
+      "description": "Памятные и юбилейные монеты разных стран"
+    }
+  },
+  {
+    "model": "catalog.collectibleitem",
+    "pk": 1,
+    "fields": {
+      "name": "1 рубль 1961 года",
+      "slug": "1-rubl-1961-goda",
+      "description": "Монета регулярного чекана СССР, состояние отличное, без следов обращения",
+      "issue_date": "1961-01-01",
+      "country": "СССР",
+      "condition": "UNC",
+      "category": 1,
+      "created_at": "2024-03-15T12:00:00Z",
+      "updated_at": "2024-03-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.collectibleitem",
+    "pk": 2,
+    "fields": {
+      "name": "Марка 'Космос 2024'",
+      "slug": "marka-kosmos-2024",
+      "description": "Памятная марка, посвященная достижениям в космической отрасли",
+      "issue_date": "2024-01-15",
+      "country": "Россия",
+      "condition": "UNC",
+      "category": 2,
+      "created_at": "2024-03-15T12:00:00Z",
+      "updated_at": "2024-03-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.collectibleitem",
+    "pk": 3,
+    "fields": {
+      "name": "25 рублей 'Олимпиада 2014'",
+      "slug": "25-rubley-olimpiada-2014",
+      "description": "Памятная монета, выпущенная к Олимпийским играм в Сочи",
+      "issue_date": "2014-02-07",
+      "country": "Россия",
+      "condition": "UNC",
+      "category": 3,
+      "created_at": "2024-03-15T12:00:00Z",
+      "updated_at": "2024-03-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.poll",
+    "pk": 1,
+    "fields": {
+      "question": "Какой вид коллекционирования вам больше нравится?",
+      "is_active": true,
+      "created_at": "2024-03-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.polloption",
+    "pk": 1,
+    "fields": {
+      "poll": 1,
+      "text": "Нумизматика (монеты)"
+    }
+  },
+  {
+    "model": "catalog.polloption",
+    "pk": 2,
+    "fields": {
+      "poll": 1,
+      "text": "Филателия (марки)"
+    }
+  },
+  {
+    "model": "catalog.polloption",
+    "pk": 3,
+    "fields": {
+      "poll": 1,
+      "text": "Оба направления"
+    }
+  }
+]

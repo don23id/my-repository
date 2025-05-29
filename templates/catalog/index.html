@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Каталог коллекционных монет и марок{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center mb-4">Каталог коллекционных монет и марок</h1>
+            <p class="lead text-center">Исследуйте мир нумизматики и филателии вместе с нами</p>
+        </div>
+    </div>
+
+    <!-- Опрос -->
+    {% if poll %}
+    <div class="card mb-4 shadow-sm border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Опрос: {{ poll.question }}</h5>
+        </div>
+        <div class="card-body">
+            {% if user.is_authenticated %}
+                {% if user_voted %}
+                    <h6>Результаты голосования:</h6>
+                    <div class="poll-results">
+                        {% for option in poll_options %}
+                        <div class="mb-3">
+                            <p class="mb-1">{{ option.text }}</p>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: {{ option.percentage }}%" 
+                                     aria-valuenow="{{ option.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ option.percentage }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ option.vote_count }} голосов</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted mb-0">Всего проголосовало: {{ total_votes }}</p>
+                {% else %}
+                    <form method="post" action="{% url 'vote_poll' poll.id %}">
+                        {% csrf_token %}
+                        {{ poll_form.as_p }}
+                        <button type="submit" class="btn btn-primary">Голосовать</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p class="text-center">Пожалуйста, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'signup' %}">зарегистрируйтесь</a>, чтобы принять участие в опросе.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Категории -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">Популярные категории</h2>
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm hover-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="card-text text-muted">{{ category.item_count }} предметов</p>
+                            <a href="{{ category.get_absolute_url }}" class="btn btn-outline-primary">Смотреть</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-center">Категории пока не добавлены.</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'category_list' %}" class="btn btn-primary">Все категории</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние добавленные предметы -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-3">Последние поступления</h2>
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+                {% for item in items %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm hover-card">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                        {% else %}
+                        <div class="card-img-top bg-light text-center py-5">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <p class="card-text text-muted">{{ item.country }}, {{ item.get_condition_display }}</p>
+                            <p class="card-text">{{ item.description|truncatechars:100 }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ item.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                            <span class="float-end text-muted">
+                                <i class="far fa-eye"></i> {{ item.hit_count.hits }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-center">Предметы пока не добавлены.</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Пагинация -->
+            {% if is_paginated %}
+            <nav aria-label="Навигация по страницам" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; Первая</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
